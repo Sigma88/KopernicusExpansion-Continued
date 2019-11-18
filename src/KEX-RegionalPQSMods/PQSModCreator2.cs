@@ -104,6 +104,7 @@ namespace SigmaKopernicusExpansion
             void IParserEventSubscriber.PostApply(ConfigNode node)
             {
                 Mod.mod = Mods?.FirstOrDefault()?.Mod;
+                Mod.mod.modEnabled = false;
             }
         }
     }
