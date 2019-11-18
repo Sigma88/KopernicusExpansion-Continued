@@ -18,12 +18,14 @@ namespace SigmaKopernicusExpansion
     {
         public class PQSMod_Regional : PQSMod
         {
-            public MapSO multiplierMap;
-            public bool splitChannels;
-            public Color multiplier;
-            public Color preBuildColor;
-            public double preBuildHeight;
             public PQSMod mod;
+            public MapSO multiplierMap;
+            public bool splitChannels = false;
+            public float offset = 0;
+            public float deformity = 1;
+            Color multiplier;
+            Color preBuildColor;
+            double preBuildHeight;
 
             public override void OnQuadPreBuild(PQ quad)
             {
@@ -53,8 +55,8 @@ namespace SigmaKopernicusExpansion
                 preBuildColor = data.vertColor;
                 preBuildHeight = data.vertHeight;
                 mod.OnVertexBuild(data);
-                data.vertColor = Color.Lerp(preBuildColor, data.vertColor, multiplier.a);
-                data.vertHeight = UtilMath.Lerp(preBuildHeight, data.vertHeight, multiplier.r);
+                data.vertColor = Color.Lerp(preBuildColor, data.vertColor, offset + multiplier.a * deformity);
+                data.vertHeight = UtilMath.Lerp(preBuildHeight, data.vertHeight, offset + multiplier.r * deformity);
             }
 
             public override void OnVertexBuildHeight(PQS.VertexBuildData data)
@@ -67,8 +69,8 @@ namespace SigmaKopernicusExpansion
                 preBuildColor = data.vertColor;
                 preBuildHeight = data.vertHeight;
                 mod.OnVertexBuildHeight(data);
-                data.vertColor = Color.Lerp(preBuildColor, data.vertColor, multiplier.a);
-                data.vertHeight = UtilMath.Lerp(preBuildHeight, data.vertHeight, multiplier.r);
+                data.vertColor = Color.Lerp(preBuildColor, data.vertColor, offset + multiplier.a * deformity);
+                data.vertHeight = UtilMath.Lerp(preBuildHeight, data.vertHeight, offset + multiplier.r * deformity);
             }
         }
 
@@ -84,17 +86,28 @@ namespace SigmaKopernicusExpansion
             private MapSOParserRGB<MapSO> multiplierMap
             {
                 get { return Mod.multiplierMap; }
-                set
-                {
-                    Mod.multiplierMap = value;
-                }
+                set { Mod.multiplierMap = value; }
             }
 
             [ParserTarget("splitChannels", Optional = true)]
-            private NumericParser<Boolean> splitChannels
+            private NumericParser<bool> splitChannels
             {
                 get { return Mod.splitChannels; }
                 set { Mod.splitChannels = value; }
+            }
+
+            [ParserTarget("offset", Optional = true)]
+            private NumericParser<float> offset
+            {
+                get { return Mod.offset; }
+                set { Mod.offset = value; }
+            }
+
+            [ParserTarget("deformity", Optional = true)]
+            private NumericParser<float> deformity
+            {
+                get { return Mod.deformity; }
+                set { Mod.deformity = value; }
             }
 
             void IParserEventSubscriber.Apply(ConfigNode node)
