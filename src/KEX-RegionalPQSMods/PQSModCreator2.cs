@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using UnityEngine;
 using Kopernicus.ConfigParser.Attributes;
 using Kopernicus.ConfigParser.BuiltinTypeParsers;
 using Kopernicus.ConfigParser.Enumerations;
@@ -9,7 +10,6 @@ using Kopernicus.ConfigParser.Interfaces;
 using Kopernicus.Configuration.ModLoader;
 using Kopernicus.Configuration.Parsing;
 using Kopernicus.UI;
-using UnityEngine;
 
 
 namespace SigmaKopernicusExpansion
@@ -24,6 +24,18 @@ namespace SigmaKopernicusExpansion
             public Color preBuildColor;
             public double preBuildHeight;
             public PQSMod mod;
+
+            public override void OnQuadPreBuild(PQ quad)
+            {
+                base.OnQuadPreBuild(quad);
+                mod.OnQuadPreBuild(quad);
+            }
+
+            public override void OnQuadBuilt(PQ quad)
+            {
+                base.OnQuadBuilt(quad);
+                mod.OnQuadBuilt(quad);
+            }
 
             public override void OnSetup()
             {
@@ -40,17 +52,7 @@ namespace SigmaKopernicusExpansion
                 }
                 preBuildColor = data.vertColor;
                 preBuildHeight = data.vertHeight;
-                //string backup = "";
-                //if (mod is PQSMod_Sigma sigma1)
-                //{
-                //    backup = sigma1.id;
-                //    sigma1.id = "Regional: ";
-                //}
                 mod.OnVertexBuild(data);
-                //if (mod is PQSMod_Sigma sigma2)
-                //{
-                //    sigma2.id = backup;
-                //}
                 data.vertColor = Color.Lerp(preBuildColor, data.vertColor, multiplier.a);
                 data.vertHeight = UtilMath.Lerp(preBuildHeight, data.vertHeight, multiplier.r);
             }
@@ -64,17 +66,7 @@ namespace SigmaKopernicusExpansion
                 }
                 preBuildColor = data.vertColor;
                 preBuildHeight = data.vertHeight;
-                //string backup = "";
-                //if (mod is PQSMod_Sigma sigma1)
-                //{
-                //    backup = sigma1.id;
-                //    sigma1.id = "Regional: ";
-                //}
                 mod.OnVertexBuildHeight(data);
-                //if (mod is PQSMod_Sigma sigma2)
-                //{
-                //    sigma2.id = backup;
-                //}
                 data.vertColor = Color.Lerp(preBuildColor, data.vertColor, multiplier.a);
                 data.vertHeight = UtilMath.Lerp(preBuildHeight, data.vertHeight, multiplier.r);
             }
@@ -112,33 +104,7 @@ namespace SigmaKopernicusExpansion
             void IParserEventSubscriber.PostApply(ConfigNode node)
             {
                 Mod.mod = Mods?.FirstOrDefault()?.Mod;
-                //if (Mod.mod is PQSMod_Sigma sigma)
-                //{
-                //    sigma.id = "PostApply: ";
-                //}
             }
         }
-
-        //    public class PQSMod_Sigma : PQSMod
-        //    {
-        //        internal string id = "Standard: ";
-
-        //        public override void OnVertexBuild(PQS.VertexBuildData data)
-        //        {
-        //            //Debug.Log("SigmaLog: PQSMod_Sigma: " + id + "OnVertexBuild");
-        //            data.vertHeight = 50;
-        //        }
-
-        //        public override void OnVertexBuildHeight(PQS.VertexBuildData data)
-        //        {
-        //            //Debug.Log("SigmaLog: PQSMod_Sigma: " + id + "OnVertexBuildHeight");
-        //            data.vertHeight = 50;
-        //        }
-        //    }
-
-        //    [RequireConfigType(ConfigType.Node)]
-        //    public class Sigma : ModLoader<PQSMod_Sigma>
-        //    {
-        //    }
     }
 }
