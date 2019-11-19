@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
@@ -16,6 +15,79 @@ namespace SigmaKopernicusExpansion
 {
     namespace SigmaRegionalPQSMods
     {
+        public class KEXtoSKEX : MonoBehaviour
+        {
+            public static void ModuleManagerPostLoad()
+            {
+                UrlDir.UrlConfig kopernicus = GameDatabase.Instance?.GetConfigs("Kopernicus")?.FirstOrDefault();
+                if (kopernicus?.config != null)
+                {
+                    var bodies = kopernicus?.config?.GetNodes();
+                    var newbodies = new ConfigNode();
+
+                    for (int body = 0; body < bodies?.Length; body++)
+                    {
+                        if (bodies[body]?.name == "Body")
+                        {
+                            var PQS = bodies[body].GetNode("PQS");
+
+                            if (PQS != null)
+                            {
+                                var Mods = PQS.GetNode("Mods");
+
+                                if (Mods != null)
+                                {
+                                    var mods = Mods.GetNodes();
+                                    var newmods = new ConfigNode();
+
+                                    for (int mod = 0; mod < mods?.Length; mod++)
+                                    {
+                                        if (mods[mod]?.name?.EndsWith("Regional") == true)
+                                        {
+                                            if (mods[mod].HasNode("Mod"))
+                                            {
+                                                ConfigNode newRegional = new ConfigNode("Regional");
+                                                ConfigNode newMod = new ConfigNode("Mod");
+                                                ConfigNode newPQSMod = new ConfigNode(mods[mod].name.Substring(0, mods[mod].name.Length - 8));
+                                                newPQSMod.AddData(mods[mod].GetNode("Mod"));
+                                                newMod.AddNode(newPQSMod);
+                                                newRegional.AddData(mods[mod]);
+                                                newRegional.RemoveNodes("Mod");
+                                                newRegional.AddNode(newMod);
+                                                mods[mod] = newRegional;
+                                            }
+                                        }
+
+                                        if (mods[mod] != null)
+                                        {
+                                            newmods.AddNode(mods[mod]);
+                                        }
+                                    }
+
+                                    Mods.ClearNodes();
+                                    Mods.AddData(newmods);
+
+                                    PQS.RemoveNodes("Mods");
+                                    PQS.AddNode(Mods);
+                                }
+
+                                bodies[body].RemoveNodes("PQS");
+                                bodies[body].AddNode(PQS);
+                            }
+                        }
+
+                        if (bodies[body] != null)
+                        {
+                            newbodies.AddNode(bodies[body]);
+                        }
+                    }
+
+                    kopernicus.config.ClearNodes();
+                    kopernicus.config.AddData(newbodies);
+                }
+            }
+        }
+
         public class PQSMod_Regional : PQSMod
         {
             public PQSMod mod;
@@ -77,7 +149,7 @@ namespace SigmaKopernicusExpansion
         [RequireConfigType(ConfigType.Node)]
         public class Regional : ModLoader<PQSMod_Regional>, IParserEventSubscriber
         {
-            [ParserTargetCollection("Mods", AllowMerge = true, NameSignificance = NameSignificance.Type)]
+            [ParserTargetCollection("Mod", AllowMerge = true, NameSignificance = NameSignificance.Type)]
             [KittopiaUntouchable]
             [SuppressMessage("ReSharper", "CollectionNeverQueried.Global")]
             public readonly List<IModLoader> Mods = new List<IModLoader>();
